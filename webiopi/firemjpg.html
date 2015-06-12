@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>MJPEG-StreamerwithFireExtinguish</title>
+</head>
+<script type="text/javascript" src="/webiopi.js"></script>
+<script type="text/javascript">
+ 
+/* Copyright (C) 2007 Richard Atterer, richardﾂｩatterer.net
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License, version 2. See the file
+   COPYING for details. */
+ 
+var imageNr = 0; // Serial number of current image
+var finished = new Array(); // References to img objects which have finished downloading
+var paused = false;
+ 
+function createImageLayer() {
+  var img = new Image();
+  img.style.position = "absolute";
+  img.style.zIndex = -1;
+  img.onload = imageOnload;
+  img.onclick = imageOnclick;
+  img.src = "http://10.13.28.51:8080/?action=snapshot&n=" + (++imageNr);
+  var webcam = document.getElementById("webcam");
+  webcam.insertBefore(img, webcam.firstChild);
+}
+ 
+// Two layers are always present (except at the very beginning), to avoid flicker
+function imageOnload() {
+  this.style.zIndex = imageNr; // Image finished, bring to front!
+  while (1 < finished.length) {
+    var del = finished.shift(); // Delete old image(s) from document
+    del.parentNode.removeChild(del);
+  }
+  finished.push(this);
+  if (!paused) createImageLayer();
+}
+ 
+function imageOnclick() { // Clicking on the image will pause the stream
+  paused = !paused;
+  if (!paused) createImageLayer();
+}
+
+
+ webiopi().ready( function()
+{
+//  webiopi().callMacro( "ChangeState", [1, 0] );
+//  webiopi().callMacro( "ChangeState", [2, 0] );
+//  webiopi().callMacro( "ChangeState", [3, 0] );
+} );
+
+function fireExtinguish(){  webiopi().callMacro( "fireExtinguish" );}
+
+function right(){	webiopi().callMacro("right");}
+
+function left(){	webiopi().callMacro("left");}
+
+function graduateRight(){ webiopi().callMacro("graduateRight");}
+
+function graduateLeft(){  webiopi().callMacro("graduateLeft");}
+
+function release(){ webiopi().callMacro("wireRelease");}
+
+
+</script>
+<body onload="createImageLayer();">
+ 
+Extinguish! 
+<!-- <input type="button" name="extinguish" value="FireFight!" onclick="fireExtinguish()"><br> -->
+<input type="image" src="ExtinguishButton.png" name="extinguish" onclick="fireExtinguish()"><br>
+<input type="button" name="release" value="Release" onclick="release()"><br>
+
+Servo Control 
+<input type="button" name="left" value="LEFT" onclick="left()"> 
+<input type="button" name="graduateLeft" value="GraduateLeft" onclick="graduateLeft()">
+<input type="button" name="graduateRight" value="GraduateRight" onclick="graduateRight()">
+<input type="button" name="right" value="RIGHT" onclick="right()"> <br><br>
+
+<div id="webcam"><noscript><img src="http://10.13.28.51:8080/?action=snapshot" /></noscript></div>
+
+
+</body>
+</html>
+
